@@ -1,0 +1,617 @@
+# =============================================================第八章 文件操作======================================================================
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 文件的编码
+"""
+计算机只能识别0和1,一切文本文件等都是通过编码技术将内容翻译成0和1存入内存中的
+编码技术就是翻译成0和1的翻译规则,记录了如何将内容翻译成二进制以及从二进制翻译回可识别内容
+计算机中有许多可用编码:UTF-8  GBK  Big5等,不同的编码将内容翻译成二进制也是不同的
+使用正确的编码才能对文件进行正确的读写操作,即以什么编码翻译过去就用什么编码翻译回来,否则就错了
+UTF-8是目前全球通用的编码格式,除非有特殊需求,否则一律以UTF-8格式进行文件编码即可
+"""
+
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 文件定义
+"""
+内存中存放的数据在计算机关机后会消失,要长久保存数据,就要使用硬盘、光盘、U盘等设备,为了便于数据的管理和检索,引入了“文件”的概念
+一篇文章、一段视频、一个可执行程序都可以被保存为一个文件,并赋予一个文件名。
+操作系统以文件为单位管理磁盘中的数据,文件可分为文本文件、视频文件、音频文件、图像文件、可执行文件等多种类别
+"""
+
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 文件的打开
+"""
+open(name, mode, encoding)
+    name: 要打开的目标文件名的字符串(可以包含文件所在的具体路径)
+    mode: 设置打开文件的模式(访问模式): 只读、写入、追加等
+    encoding: 编码格式(推荐使用UTF-8)
+    举例 f = open('python.txt', 'r', encoding = 'UTF-8')# encoding的顺序不是第三位,所以不能用位置参数,用关键字参数直接指定
+        注意,f是open函数的文件对象,对象是python中一种特殊的数据类型,拥有属性和方法,可以使用对象.属性或对象.方法对其进行访问,后续会介绍
+        r: 只读方式打开文件,文件的指针将会放在文件的开头,这是默认模式
+        w: 打开一个文件只用于写入。如果该文件已存在则打开文件,并从开头开始编辑,原有内容会被删除。如果该文件不存在,创建新文件
+        a: 打开一个文件用于追加,如果该文件已存在,新的内容将会被写入到已有内容之后。如果该文件不存在,创建新文件进行写入
+"""
+f = open('D:/00-code/python/pythonProject/python_test.txt', 'r', encoding = 'UTF-8')
+print(type(f))# <class '_io.TextIOWrapper'>表示对文本文件进行IO操作功能的一个类,text就是文本
+
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 文件的读取
+
+# 1、read()方法
+"""
+文件对象.read(num)
+    num表示要从文件中读取的数据的长度(单位是字节),如果没有传入num,就表示读取文件中所有的数据
+"""
+f = open('D:/00-code/python/pythonProject/python_test.txt')
+print(f.read())
+f.close()
+"""
+输出为                         ====================>这里的输出样式和下面的readlines不一样哦
+hi, welcome to my test txt
+this will be fun
+"""
+f = open('D:/00-code/python/pythonProject/python_test.txt')
+print(f.read(3))# 先读了3个字节
+print(f.read())# 再想读全部
+f.close()
+"""
+输出为                       ===================>会发现,紧接着的这次读全部竟然是从前面读完3个字节之后的位置开始读的,read的这个特点要注意
+                                                紧接着的两次read,文件打开后,后面的read操作会从上一次结束的位置开始读,read()后再接readlines()
+                                                也是一样的,所以与读的方法无关,只与上一次读完后指针指向的位置有关
+hi,
+ welcome to my test txt
+this will be fun
+"""
+f = open('D:/00-code/python/pythonProject/python_test.txt')
+print(f.read())
+print(f.readlines())
+f.close()
+"""
+输出为
+hi, welcome to my test txt
+this will be fun            ===================>这两行是read()读出来的
+[]                          ===================>这里readlines()读出的是空列表[]就是因为前面的read()已经把文件读完了,读指针指向了结尾,所以再去
+                                                读的时候就什么都没有了
+"""
+
+
+# 2、readlines()方法
+"""
+文件对象.readlines()
+    按照行的方式把整个文件中的内容进行一次性读取,并且返回一个包含全部读取内容的封装后的列表,其中每一行的数据为一个元素
+    read()和readline()两种方法读取的是字符串也就是文本文件里原本存的东西,不会封装到列表里,也不会有\n,所以用readlines()这个方法需要注意这一点
+"""
+f = open('D:/00-code/python/pythonProject/python_test.txt')
+content = f.readlines()
+print(content)# ['hi, welcome to my test txt\n', 'this will be fun']得到的是一个列表,每一行为一个元素
+f.close()
+
+
+# 3、readline() 一次读取一行内容
+f = open('D:/00-code/python/pythonProject/python_test.txt')
+print(f"第一行{f.readline()}")
+print(f"第二行{f.readline()}")
+print(f"第三行{f.readline()}")
+print(f"第四行{f.readline()}")
+print(f"第五行{f.readline()}")
+f.close()
+"""
+输出为
+第一行hi, welcome to my test txt
+
+第二行this will be fun
+
+第三行the third lines
+
+第四行just verify the func
+第五行          =========>这行为什么不和前面的print行间隔一行再打印
+                         前3行末尾都有隐藏的换行符 \n(包括不可见的行结束符)
+                         print() 函数默认会在输出末尾自动添加一个换行符(除非用 end="" 关闭)。
+                         所以叠加之后,效果是双重换行,到了第五行的时候,文本结尾没有\n,只有一个print()的换行,所以没有空白行间隔
+"""
+
+
+# 4、for循环读取
+"""
+这种方法最为简单
+for line in open(name, mode, encoding):
+    print("xxx")
+"""
+f = open('D:/00-code/python/pythonProject/python_test.txt')
+for line in f:
+    print(f"每一行数据是{line}")
+"""
+输出为
+每一行数据是hi, welcome to my test txt
+
+每一行数据是this will be fun
+
+每一行数据是the third lines
+
+每一行数据是just verify the func
+"""
+
+
+"""
+练习: 单词计数
+通过Windows的文本编辑器软件,将如下内容,复制并保存到word.txt,文件可以存储在任意位置
+通过文件读取操作,读取此文件,统计honghong单词出现的次数
+"""
+with open('D:/00-code/python/pythonProject/word.txt', 'r', encoding = 'UTF-8') as f:
+    count = 0
+    for line in f:
+        new_count = line.count("tingting")
+        count += new_count
+    print(count)
+# 所有方法都试一下然后看看效果,readline这里就不好用了,因为只能读一行,没法实现遍历,要实现遍历还更麻烦了
+# 所以只能用for循环、read()和readlines(),但是其实read()和readlines()读出来之后还是要遍历,可能还是要用for循环,readlines得到一个列表可能还要分隔
+# 直接for循环
+f = open('D:/00-code/python/pythonProject/word.txt', 'r', encoding = 'UTF-8')
+count = 0
+for line in f:
+    new_count = line.count("tingting")# print了line直接就是str类型,所以直接用了str里的count方法
+    count += new_count
+print(count)
+f.close()
+
+
+# readlines方法得到list,每行的type还是str,去掉\n,再比较
+f = open('D:/00-code/python/pythonProject/word.txt', 'r', encoding = 'UTF-8')
+count = 0
+content = f.readlines()
+for line in content:
+    print(type(line))
+    new_line = line.replace("\n", "")# replace这种方法会得到一个新的字符串,因为字符串本身不可修改
+    new_count = new_line.count("yingying")
+    count += new_count
+print(count)
+f.close()
+# 不把\n去掉似乎也没问题,仍然得到了正确的答案
+f = open('D:/00-code/python/pythonProject/word.txt', 'r', encoding = 'UTF-8')
+count = 0
+content = f.readlines()
+for line in content:
+    print(type(line))
+    # new_line = line.replace("\n", "")# replace这种方法会得到一个新的字符串,因为字符串本身不可修改
+    # new_count = new_line.count("yingying")
+    new_count = line.count("mengmeng")
+    count += new_count
+print(count)
+f.close()
+
+
+#read方法得到了content是str然后再for循环
+f = open('D:/00-code/python/pythonProject/word.txt', 'r', encoding = 'UTF-8')
+count = 0
+content = f.read()
+print(content)
+print(type(content))
+for name in content:
+    new_count = content.count("yingying")# print了line直接就是str类型,所以直接用了str里的count方法
+    count += new_count
+print(count)# 为什么是612这么大的数字
+f.close()
+"""
+通过下面的方法看i和的new_count打印发现一共进入循环204次,每次都count到3次
+看文件发现加上前面几行的换行符,刚好是204位,所以for循环的时候竟然是每次读指针移动一个位,但是又对content中所有内容进行和"yingying"的对比
+这是因为我在计算count的时候是用的content.count("yingying")
+如果我用name.count("yingying")会发现循环了204次每次都读到了0次,因为name是以一个字母或者空格为一个单位的
+而前面直接用for循环和readlines方法之所以成功是因为for循环是以每行为一个单位进行一次循环,每次只加了那一行count到几个目标字符串,所以结果是对的
+readlines方法中以行为单位进行循环是可以理解的,因为readlines最终的输出封装到了一个列表里,每一行为一个元素,一次读一个元素很好理解
+直接用for循环为什么一次会以一行为单位呢
+老师用read的方法里直接对read之后的content进行了count所以是对的和我直接用for循环是一样的
+所以这个read方法我错误的原因是又用了for循环
+
+文本内容如下:
+honghong jingjing yingying lanlan chengcheng         ===========>加上换行符45个字节
+bingbing tingting lingling mengmeng                  ===========>加上换行符36个字节
+xingxing honghong honghong xingxing                  ===========>加上换行符36个字节
+yingying lingling tingting lanlan mengmeng           ===========>加上换行符43个字节
+honghong jingjing yingying lanlan chengcheng         ===========>没有换行符44个字节
+"""
+f = open('D:/00-code/python/pythonProject/word.txt', 'r', encoding = 'UTF-8')
+count = 0
+content = f.read()
+print(content)
+print(type(content))
+i = 1
+for name in content:
+    print(i)
+    i += 1
+    new_count = content.count("yingying")# print了line直接就是str类型,所以直接用了str里的count方法
+    print(new_count)
+    count += new_count
+print(count)# 为什么是612这么大的数字
+f.close()
+
+
+# readline一行一行读取,设置一个判断读完了之后就停止循环
+f = open('D:/00-code/python/pythonProject/word.txt', 'r', encoding = 'UTF-8')
+count = 0
+flag = True
+while flag:# content 为空就说明已经读完行了
+    content = f.readline()
+    if not content:
+        flag = False
+        continue# 这句不用加
+    print(content)
+    print(type(content))
+    for name in content:
+        new_count = content.count("honghong")# print了line直接就是str类型,所以直接用了str里的count方法
+        count += new_count
+print(count)#得到了161这样奇怪的数字
+f.close()
+"""
+文本内容如下:
+honghong jingjing yingying lanlan chengcheng         ===========>加上换行符45个字节
+bingbing tingting lingling mengmeng                  ===========>加上换行符36个字节
+xingxing honghong honghong xingxing                  ===========>加上换行符36个字节
+yingying lingling tingting lanlan mengmeng           ===========>加上换行符43个字节
+honghong jingjing yingying lanlan chengcheng         ===========>没有换行符44个字节
+"""
+# 通过下面的代码打印了i和j和new_count发现确实是只打印了5行,最后一行为空并且停止了循环,这是对的
+# 但是for循环里面,读指针仍然是每次移动一个字节,但是对比"honghong"是和整行内容对比,在第一行读到1次,第三行读到2次,最后一行读到1次,
+# 所以count一共加了45个1(第一行)、36个2(第三行)、44个1(最后一行),所以是161
+# 这个读指针和for循环有意思
+f = open('D:/00-code/python/pythonProject/word.txt', 'r', encoding = 'UTF-8')
+count = 0
+flag = True
+i = 1
+j = 1
+while flag:# content 为空就说明已经读完行了
+    content = f.readline()
+    if not content:
+        flag = False
+        continue# 这句不用加
+    print(content)
+    print(type(content))
+    print(f"====================================i的值是{i}========================================================")
+    i += 1
+    for name in content:
+        print(j)
+        j += 1
+        new_count = content.count("honghong")# print了line直接就是str类型,所以直接用了str里的count方法
+        print(f"读到的次数为{new_count}")
+        count += new_count
+print(count)#得到了161这样奇怪的数字
+f.close()
+# 不用for循环,下面的代码得到了正确的输出
+f = open('D:/00-code/python/pythonProject/word.txt', 'r', encoding = 'UTF-8')
+count = 0
+flag = True
+i = 1
+j = 1
+while flag:# content 为空就说明已经读完行了
+    content = f.readline()
+    if not content:
+        flag = False
+        continue# 这句不用加
+    print(content)
+    print(type(content))
+    print(f"====================================i的值是{i}========================================================")
+    i += 1
+    new_count = content.count("honghong")  # print了line直接就是str类型,所以直接用了str里的count方法
+    print(f"读到的次数为{new_count}")
+    count += new_count
+    # for name in content:
+    #     print(j)
+    #     j += 1
+    #     new_count = content.count("honghong")# print了line直接就是str类型,所以直接用了str里的count方法
+    #     print(f"读到的次数为{new_count}")
+    #     count += new_count
+print(count)
+f.close()
+"""
+综上,我对for循环的理解不明确,知识补充见循环的for循环部分,已经补充了
+那么我写的readlines方法的代码里是否可以不用for循环呢,不可以,因为得到的是一个列表,要对其中的每一个元素进行判断,直接count目标字符串得到的结果是0
+因为列表中没有一个元素是这个字符串,是要在列表的每个元素中搜索这个字符串
+"""
+
+
+# 老师的方法1: 读取全部内容,通过字符串count方法统计单词数量
+f = open()
+content = f.read()
+count = content.count("tingting")# 直接这样就计算出来了,我那个for循环是错在了哪里
+print(count)
+f.close()
+# 老师的方法2: 读取内容,一行一行读取,判断单词出现次数并累计
+# 老师说readlines和for循环都可以按行读取           ===========>为什么for循环默认就是一行行读取呢,相关知识补充见循环的for循环部分,已经补充了
+#这个方法感觉老师用的split很麻烦,不知道为什么要用,以后如果读取文件遇到问题再来回看也许split
+
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 文件的写入
+"""
+注意
+直接调用write内容并未真正的写入文件,而是会积攒在程序的内存中,称之为缓冲区(缓冲区是内存中的临时中转区)
+当调用flash的时候,内容会真正的写入文件
+这样做是避免频繁的操作硬盘,导致效率下降
+"""
+# 打开不存在文件
+f = open('D:/00-code/python/pythonProject/pythoon_test.txt', 'w', encoding = 'UTF-8')# 以"w"的模式
+# 文件写入
+f.write("hello world")
+# 内容刷新
+f.flush()# 创建一个新文件pythoon_test.txt并写入hello world
+# 关闭文件
+f.close()
+
+
+# 打开已存在文件
+f = open('D:/00-code/python/pythonProject/pythoon_test.txt', 'w', encoding = 'UTF-8')# 以"w"的模式
+# 文件写入
+f.write("welcome to my world")
+# 关闭文件
+f.close()# 1、close()内置了flush()功能,2、在pythoon_test.txt文件中清空之前的内容,写入welcome to my world
+
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 文件的追加
+
+# 打开不存在文件
+f = open('D:/00-code/python/pythonProject/pythoon_test.txt', 'a', encoding = 'UTF-8')# 与w模式语法完全一致,只不过打开模式改成a
+# 文件写入
+f.write("hello world")
+# 内容刷新
+f.flush()
+# 关闭文件
+f.close()# 文件中原本是welcome to my world,执行操作之后变成welcome to my worldhello world,不会换行就直接在后面写,在开头加一个\n就可以换行了
+"""
+文件不存在会创建新文件
+文件存在,会在最后追加写入文件
+"""
+
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 文件的关闭
+
+# close方法
+"""
+文件对象.close()
+为什么要关闭文件,如果不调用close,同时程序没有停止运行,那么这个文件会一直被python程序占用,所以文件操作结束要及时close,这是一个好习惯
+"""
+
+# with open语法操作文件
+"""
+with open(name, mode, encoding) as 文件对象如f:
+    相关操作代码如f.readlines()
+通过在with open语句块中对文件进行操作
+可以在操作完成后自动关闭close文件,避免遗忘掉close方法
+"""
+with open('D:/00-code/python/pythonProject/python_test.txt', 'r', encoding = 'UTF-8') as f:
+    for line in f:
+        print(line)
+
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 综合案例
+"""
+练习:完成文件备份案例
+有一份账单文件,记录了消费收入的具体记录,
+name, date, money, type, remarks
+jingjing, 2022-01-02, 10000, 消费, 正式
+honghong, 2022-01-02, 30000, 消费, 测试
+yingying, 2022-01-02, 10000, 消费, 正式
+tingting, 2022-01-02, 10000, 消费, 测试
+要求:
+读取文件
+将文件写入bill.bak文件作为备份
+同时将文件内标记为测试的数据行丢弃,就是如果这一行是测试就不会备份了
+实现思路:
+"""
+# 1、一开始我理解错题目了,以为是要将原文件中remarks为测试的行删掉
+#打开文件
+f1 = open('D:/00-code/python/pythonProject/bill.txt', 'r', encoding = 'UTF-8')
+# for循环
+for line in f1:
+    # 创建一个新文件
+    f2 = open('D:/00-code/python/pythonProject/bill.bak', 'a', encoding = 'UTF-8')
+    # 将每一行写入实现备份
+    f2.write(line)
+    # 实现flush并关闭f2
+    f2.close()
+    # 将文件内标记为测试的数据行丢弃
+    if line.count("测试"):
+        print(line)
+        line = ""# 想要将line直接赋值为空字符串
+        #这一步是不能实现的,因为我打开f1的mode是read,只能读取不能写入,所以要么重新打开写入要么另外
+f1.close()
+
+# 现在只剩下最后一步将文件内标记为测试的数据行丢弃没有实现了
+# 通过非r模式将文件打开,for循环处直接报错io.UnsupportedOperation: not readable,这是因为在非read模式下打开却执行了read的操作
+f1 = open('D:/00-code/python/pythonProject/bill.txt', 'w', encoding = 'UTF-8')
+f1 = open('D:/00-code/python/pythonProject/bill.txt', 'a', encoding = 'UTF-8')
+for line in f1:
+    if line.count("测试"):
+        print(line)
+        line = ""
+f1.close()
+
+
+# 2、原来题目的意思是备份文件中不出现测试所在行,而不是修改原文件,重新写
+# 不过如何修改原文件这个问题很重要,是出于什么考虑或者体现了什么设计思路吗   ===============>见最下方知识补充
+f1 = open('D:/00-code/python/pythonProject/bill.txt', 'r', encoding = 'UTF-8')
+# for循环
+for line in f1:
+    # 创建一个新文件
+    f2 = open('D:/00-code/python/pythonProject/bill.bak', 'a', encoding = 'UTF-8')
+    if not line.count("测试"):
+        print(line)
+        f2.write(line)# 这一行没有实现,我本来以为是我没有flush,现在看也不是
+        # f2.flush()# 试了一下不是flush的原因,因为会把内容先写进内存最后close的时候一并flush
+        # 原来是w和a的原因,改成a模式之后就写入了,那么w为什么不能写入呢,讲道理这里老师选a就是没有道理的,因为后面的内容会把前面的覆盖掉
+        # 这个w的问题可以通过将f2的open挪到for循环之前解决,这样就只对f2进行了一次写入
+        # 但是即便是这样也应该有一行而不是空才对,是因为我没有continue吗,但是continue本身在这里就是没有用啊
+        # 如果选了w模式,只是打开但并没有写入,那么文件原有内容会被清空吗,这是个问题
+    # 实现flush并关闭f2
+    f2.close()
+f1.close()
+# 上面的写法发现以a模式打开f2可以实现,但是以w模式打开文件就不可以实现,bill.bak为空,猜测是不是因为w打开文件如果不发生任何写入也会把之前的清空掉
+# 用下面的代码验证,果然w模式打开即清空,有写入就写入,无写入文件就为空了
+f1 = open('D:/00-code/python/pythonProject/bill.txt', 'r', encoding = 'UTF-8')
+for line in f1:
+    f2 = open('D:/00-code/python/pythonProject/bill.bak', 'w', encoding = 'UTF-8')
+    if not line.count("测试"):
+        print("进入if not")
+        print(line)
+        f2.write(line)
+    f2.close()
+    f3 = open('D:/00-code/python/pythonProject/bill.bak', 'r', encoding = 'UTF-8')
+    print(f"此时的bak文件是{f3.read()}")
+f1.close()
+"""
+输出为:
+进入if not
+jingjing, 2022-01-02, 10000, 消费, 正式
+
+此时的bak文件是jingjing, 2022-01-02, 10000, 消费, 正式
+
+此时的bak文件是    ===============>这里是对应remarks是测试的行,没有进入if not判断逻辑内部,只是对文件进行了打开关闭再打开,文件就空了
+进入if not
+yingying, 2022-01-02, 10000, 消费, 正式
+
+此时的bak文件是yingying, 2022-01-02, 10000, 消费, 正式
+
+此时的bak文件是    ===============>同理
+"""
+
+
+# 3、看了老师的写法,发现可以通过将f2在for循环之外打开来实现,这样f2只打开了一次,然后一次性把所有remarks为正式的行都写入了
+# 不管怎么说又发现了一个问题,这就是好事
+f1 = open('D:/00-code/python/pythonProject/bill.txt', 'r', encoding = 'UTF-8')
+f2 = open('D:/00-code/python/pythonProject/bill.bak', 'w', encoding = 'UTF-8')
+for line in f1:
+    if not line.count("测试"):
+        print(line)# 有这种print语句是为了验证用
+        f2.write(line)
+f1.close()
+f2.close()
+
+
+# 4、老师的方法还避免了如果不是remarks是测试而某些标签中有测试的情况
+# 即单纯用if not line.count("测试")或者if "测试" in line这种方式来判断remarks是否为"测试"是不准确的,当前的案例没有出错是因为固定的数据内容简单
+# 自己模仿老师的思路如下:把所有字符串的方法都想了一下,应该只有下面两种写法
+# 1、用字符串切片法
+f1 = open('D:/00-code/python/pythonProject/bill.txt', 'r', encoding = 'UTF-8')
+f2 = open('D:/00-code/python/pythonProject/bill.bak', 'w', encoding = 'UTF-8')
+for line in f1:
+    # 只有最后两个字是测试才不会被写入
+    # 1、用字符串切片法
+    if not line[33:35] == "测试":
+        print(line)# 有这种print语句是为了验证用
+        f2.write(line)
+f1.close()
+f2.close()
+# 2、用分割,将各个标签对应的内容分别作为元素封装到一个列表里,再看列表中对应的那个元素是不是测试就可以了
+f1 = open('D:/00-code/python/pythonProject/bill.txt', 'r', encoding = 'UTF-8')
+f2 = open('D:/00-code/python/pythonProject/bill.bak', 'w', encoding = 'UTF-8')
+for line in f1:
+    # 只有最后两个字是测试才不会被写入
+    # 2、用分割,将各个标签对应的内容分别作为元素封装到一个列表里,再看列表中对应的那个元素是不是测试就可以了
+    # 注意,这里每行的结尾都有\n,所以要先去掉\n,那就要用到strip了
+    new_line = line.strip("\n")
+    item = new_line.split(", ")[4]
+    if item != "测试":
+        f2.write(line)
+        # f2.wirte("\n")注意,这里老师写的时候没有用new_line重新命名,所以他把line写进f2之后需要重新加\n
+        # 但是我就不用了,因为我write的是f2里的line而不是new_line,我觉得我的比老师的严谨
+f1.close()
+f2.close()
+
+
+/* ===================================================知识补充===========================================================*/
+"""
+我在上面的过程中因为理解错题目想要实现在打开文件的过程中直接修改文件,但r、w、a显然都无法帮我实现这个功能
+1、python中是否有方法实现边打开边直接修改原文件的功能
+2、其他语言是否有边打开边直接修改原文件的方法
+3、计算机原理对于文件管理是如何设计的,难道所有的文件修改都只能重新写一份符合要求的文件,再用新文件替换原文件吗
+带着这3个文件我请教了deepseek,对这个问题的解答其实是先回答问题3,再看1和2,然后比较python和其他语言关于文件修改这方面处理的区别
+以下是答案:
+
+
+一、计算机如何存储文件(物理层基础)
+文件的本质:
+文件是存储在磁盘上的二进制数据块,操作系统通过文件系统(如NTFS、EXT4)管理它们。
+磁盘存储的最小单位是扇区(通常512字节或4KB),文件系统会将文件分割成多个块存储。
+关键限制:
+磁盘不能直接"插入"或"删除"数据:就像磁带一样,只能覆盖原有数据或在末尾追加。
+修改中间内容 = 覆盖写入:如果想在文件中间修改10个字节,必须精确覆盖这10个字节,不能自动拉伸文件。
+
+
+二、编程语言的文件操作设计思想
+所有编程语言的文件操作都基于上述物理限制,但提供了不同层次的抽象:
+1. 低级语言(C语言)
+最接近硬件:直接暴露指针操作,需要手动管理每一个细节。
+示例:用fseek()移动指针 + fwrite()覆盖数据。
+FILE *fp = fopen("file.txt", "r+");
+fseek(fp, 10, SEEK_SET); // 移动到第10字节
+fwrite("NEW", 1, 3, fp);  // 覆盖3个字节
+fclose(fp);
+特点:
+完全控制但容易出错(如覆盖错误位置)。
+需要程序员自己处理缓冲区和字节对齐。
+2. 中级语言(Python/Java)
+平衡抽象与控制:
+Python的'r+'模式本质上和C相同,但封装了缓冲区管理。
+提供了高级接口(如read()/write()),但保留了指针操作(seek())。
+设计思想:
+默认认为用户需要全量读取修改(文本处理更常见)。
+保留底层接口(二进制模式)满足特殊需求。
+3. 高级脚本语言(Ruby/JavaScript)
+倾向全量操作:
+比如Node.js的fs.writeFileSync()会直接重写整个文件。
+Ruby的File.write也类似。
+设计思想:
+牺牲部分控制权换取易用性。
+适合现代SSD(随机写入性能好),不适合机械硬盘大文件。
+4. 特殊语言(Perl)
+魔法变量:Perl的$-I变量可以直接映射文件到内存,但实际仍是全量操作。
+设计思想:
+通过语法糖隐藏复杂性。
+
+
+三、为什么不能直接"编辑"文件
+物理限制:
+磁盘上的数据是连续的,插入数据需要移动后面所有内容,这涉及:
+分配新空间->复制剩余数据->更新文件系统元数据,这不是一个原子操作,可能因崩溃导致文件损坏。
+解决方案的演进:
+传统方法:全量读取→修改→重写(牺牲性能保安全)。
+现代优化:
+内存映射文件(mmap):让文件像内存一样访问。
+写时复制(Copy-on-Write):如Git的文件版本管理。
+
+
+四、各语言统一的设计原则
+安全边界:
+所有语言都会在易用性和控制力之间权衡。
+Python选择:"明确优于隐晦"(给你工具但不隐藏风险)。
+通用模式:
+A[打开文件] -->B{操作类型}
+B -->|读取| C[全量加载/流式读取]
+B -->|修改| D[覆盖/追加/内存修改后重写]
+即打开文件,然后看操作类型,如果是读取,就是全量加载/流式读取两种方式,如果是修改,就是覆盖/追加/内存修改后重写3种方式
+最佳实践:
+小文件:全量读取修改(Python的read() + write())。
+大文件:流式处理(如边读边写临时文件)。
+关键数据:用数据库(如SQLite)而非直接操作文件。
+
+
+五、你的认知框架
+物理层:文件是连续的二进制块,修改=覆盖。
+抽象层:
+低级语言:暴露指针操作(精准但危险)。
+高级语言:封装常见模式(安全但损失灵活性)。
+设计哲学:
+越底层的语言越接近硬件真相。
+越高级的语言越强调"人类友好"。
+类比理解:编辑文件就像编辑纸质书:
+C语言:给你刀片和胶水,自己裁剪粘贴。
+Python:给你可擦写钢笔,但只能整页重抄。
+Ruby/JS:直接给你打印机和空白纸。
+
+
+所以无论各种语言如何封装,本质上都是内存中重写,然后将文件覆盖,最大限度的保护文件安全
+"""

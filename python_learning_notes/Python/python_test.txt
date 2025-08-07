@@ -1,0 +1,4 @@
+hi, welcome to my test txt
+this will be fun
+the third lines
+just verify the func

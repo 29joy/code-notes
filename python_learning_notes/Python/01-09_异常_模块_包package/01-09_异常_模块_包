@@ -1,0 +1,397 @@
+# ==========================================================第九章 异常_模块_包====================================================================
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 异常
+# 程序运行时检测到一个错误,解释器会给出提示
+
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 捕获异常
+
+
+# 为什么要捕获异常
+"""
+世界上没有完美的程序,任何程序在云心过程中都可能会出现异常
+我们要做的不是力求程序完美运行,而是在力所能及的范围内对可能出现的bug进行提前准备和处理,这个行为称之为异常处理或捕获异常
+
+当bug出现的时候,会有两种情况,1、整个程序因为这个bug停止运行,2、对bug进行提醒,对bug进行处理,使整个程序继续运行
+在实际工作中,不能因为一个小bug就让程序崩溃,也就是希望达到第2种情况,就需要使用到捕获异常
+
+捕获异常的作用在于: 提前假设某处会出现异常,做好提前准备,当真的出现异常的时候,可以有后续手段
+"""
+
+
+# 捕获常规异常
+"""
+基本语法:
+try:
+    可能发生错误的代码
+except:
+    如果出现异常执行的代码
+"""
+try:# 有可能出现异常的代码
+    open('D:/00-code/python/pythonProject/word.txt', 'r', encoding = 'UTF-8')
+except:# 如果出现了异常就这样处理
+    open('D:/00-code/python/pythonProject/word.txt', 'w', encoding = 'UTF-8')
+    # 如果文件不存在就用w模式打开,再运行代码就不报异常了,而是按照这里的代码运行
+
+
+# 捕获指定异常
+"""
+有多种多样的异常,如果想要捕获某种指定的异常就用下方的方法
+基本语法见下方代码
+注意:
+1、如果尝试执行的代码的异常类型和要捕获的异常类型不一致,则无法捕获异常
+2、一般try下方只放一行尝试执行的代码
+"""
+try:
+    print(name)
+except NameError as e:# e是别名,这里叫e叫a叫什么都可以
+    print("name变量名称未定义错误")
+
+try:
+    print(1 / 0)# 报错ZeroDivisionError
+except NameError as e:# 0不可以被除不是NameError报错,所以不会被捕获
+    print("name变量名称未定义错误")
+
+
+# 捕获多个异常
+"""
+把要捕获的异常类型的名字,放到except后,并使用元组的方式进行书写
+"""
+try:
+    print(1 / 0)
+except (NameError, ZeroDivisionError) as e:
+    print("name变量名称未定义错误")
+
+
+# 捕获所有异常
+"""
+遇到自己并不确定会遇到什么异常的情况,捕获单个或多个异常都不适用了,可以使用捕获所有异常
+基础语法其实就是捕获所有异常
+try:
+    可能发生错误的代码
+except:
+    如果出现异常执行的代码
+下面的语法也是捕获所有异常, Exception代指所有异常,一般情况下会这样用
+try:
+    可能发生错误的代码
+except Exception as e:
+    如果出现异常执行的代码
+学到类之后会知道Exception是顶级异常
+/* ===================================================待补充===========================================================*/
+"""
+
+
+# 异常else, 没有异常的时候执行的代码
+try:
+    print(1)
+except Exception as e:
+    print(e)
+else:# 可选,可写可不写
+    print("我是else, 是没有异常的时候执行的代码")
+
+
+# 异常finally, 无论如何都要执行的代码
+try:
+    f = open('D:/00-code/python/pythonProject/word.txt', 'r', encoding = 'UTF-8')
+except Exception as e:
+    f = open('D:/00-code/python/pythonProject/word.txt', 'w', encoding = 'UTF-8')
+else:
+    print("我是else, 是没有异常的时候执行的代码")
+finally:
+    print("我是finally, 有无异常都要执行")
+    f.close()# 无论是否有异常,都要执行关闭文件确保文件被正确关闭
+
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 异常的传递
+
+def func1():
+    print("func1开始")
+    num = 1 / 0
+    print("func1结束")
+
+def func2():
+    print("func2开始")
+    func1()
+    print("func2结束")
+
+def main():
+    print("main开始")
+    try:
+        func2()
+    except Exception as e:
+        print(e)
+    print("main结束")
+main()
+"""
+异常的传递性使得异常最终会在main函数中被捕获
+输出为
+main开始
+func2开始
+func1开始
+division by zero
+main结束
+"""
+# 注意,当所有函数都没有捕获异常的时候,程序会报错
+def func1():
+    print("func1开始")
+    num = 1 / 0
+    print("func1结束")
+
+def func2():
+    print("func2开始")
+    func1()
+    print("func2结束")
+
+def main():
+    print("main开始")
+    func2()
+    # try:
+    #     func2()
+    # except Exception as e:
+    #     print(e)
+    print("main结束")
+main()
+"""
+输出如下,可以看到异常的报错是一路追踪到了func1里
+main开始
+func2开始
+func1开始
+Traceback (most recent call last):
+  File "D:\00-code\python\pythonProject\test.py", line 19, in <module>
+    main()
+  File "D:\00-code\python\pythonProject\test.py", line 13, in main
+    func2()
+  File "D:\00-code\python\pythonProject\test.py", line 8, in func2
+    func1()
+  File "D:\00-code\python\pythonProject\test.py", line 3, in func1
+    num = 1 / 0
+          ~~^~~
+ZeroDivisionError: division by zero
+"""
+# 综上,我们如果想要捕获异常并不一定需要找到最根源的异常处去捕获,在最上层的调用处也可以捕获,因为异常具有传递性
+
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 模块
+
+# 模块的导入
+"""
+什么是模块
+python模块(module),是一个python文件,以.py结尾
+模块能定义函数,类和变量,模块里也能包含可执行的代码
+
+模块的作用:
+python中有很多不同的模块,每个模块都可以帮助我们快速的实现一些功能,比如实现和时间相关的功能就可以使用time模块
+我们可以认为模块就是工具包,每个工具包中都有各种不同的工具供我们使用进而实现不同的功能
+
+导入python内置的模块
+[from 模块名] import [模块/类/变量/函数/*] [as 别名]# []表示可选的意思,所以除了import其他都可选
+常用组合名如:
+import 模块名
+import 模块名 as 别名
+from 模块名 import 类/变量/方法等
+from 模块名 import *
+from 模块名 import 功能名 as 别名
+"""
+# 使用import导入time模块使用sleep函数, 注意这里实际将整个time模块都导入了
+import time
+print("hello")
+time.sleep(5)# time后面的点表示层级关系, 这里就表示调用time中的sleep功能
+print("world")
+# 使用from导入time模块使用sleep函数, 这里只导入了sleep功能,所以是不能用其他的time中的函数的
+from time import sleep
+print("hello")
+sleep(5)# 因为只导入了sleep,所以不需要使用time.sleep()层级的方式来使用sleep函数了
+print("world")
+# 使用 * 导入time模块的全部功能,和import time有区别吗
+from time import *
+print("hello")
+sleep(5)# 和import time的区别在此,使用的时候不需要time.sleep()直接使用sleep(5)
+print("world")
+# 使用as给特定功能加上别名,给某些模块或功能改名,当某些模块或者功能名字非常长的时候很方便
+# 演示1
+import time as t
+print("hello")
+t.sleep(5)# 使用的时候直接用别名t
+print("world")
+# 演示2
+from time import sleep as sl
+import time as t
+print("hello")
+sl(5)# 使用的时候直接用别名sl
+print("world")
+
+# 自定义模块, 有时候需要一些个性化的模块,就可以通过自定义模块实现
+# 如何自定义模块并使用它
+"""
+创建一个文件my_module1并定义函数test
+在my_module2文件中导入并使用它且获得正确的结果
+假设有my_module3文件,其中也定义了test函数,但功能和my_module1中的test函数功能不同,在my_module2文件中同时导入了my_module1和my_module3中的test函数
+(即调用了两个不同模块中同名的函数),那么后调用的函数会覆盖先调用的函数
+详见my_module2.py的举例
+"""
+
+# __main__变量的作用
+"""
+实际开发中,当一个开发人员编写完一个模块后,为了让模块能够在项目中达到想要的效果,可能会在py文件中添加一些测试信息
+例如,在my_module1.py文件中添加测试代码test(2, 5)
+def test(a, b):
+    return a + b
+test(2, 5)
+问题:
+此时,无论是当前文件,还是其他导入了该模块的文件,在运行的时候都会自动执行test(2, 5)这句test函数的调用
+所以,不想删掉测试代码test(2, 5),因为很有可能每次更新模块后都想执行测试代码test(2, 5)来验证模块的正确性,但是又不想其他导入了该模块的文件执行这行测试代码
+解决办法: __main__变量
+"""
+if __name__ == '__main__':
+    test(2, 5)# 将测试代码写入__main__变量的if判断里
+"""
+整个python文件,有一个内置变量__name__,当右键运行这个python文件时,__name__的名称就会标记为__main__
+所以如果我们单纯右键运行该模块文件的时候,__name__ 就 == '__main__',这个if判断为true,就会执行测试代码test(2, 5)
+而其他导入了该模块的文件在运行时if判断为false就不会执行测试代码test(2, 5)
+"""
+/* ===================================================已补充===========================================================*/
+# 关于__name__的补充,总结来说python中__name__被设计出来的目的就是为了测试代码可以在其他导入该模块的文件中不被执行
+"""
+✅ __name__ 是什么？
+在每个 Python 模块中,解释器都会自动设置一个变量叫 __name__:
+
+如果模块是 被直接运行(比如运行 python my_script.py),那么 __name__ 的值是 "__main__"。
+
+如果模块是 被其他模块导入,那么 __name__ 的值是模块名,比如 "my_script"。
+
+✅ 为什么需要它？
+我们用一个简单例子来看:
+
+python
+复制
+编辑
+# file: my_module.py
+
+def say_hello():
+    print("Hello!")
+
+if __name__ == "__main__":
+    # 只在直接运行这个文件时才执行
+    say_hello()
+然后你在另一个文件中导入这个模块:
+
+python
+复制
+编辑
+# file: main.py
+
+import my_module
+# 这里不会自动打印 "Hello!"
+这个设计有两个重要作用:
+
+模块复用:你可以放心地把功能写在模块里,其他人导入你的代码时不会执行你用来测试或运行的逻辑。
+
+独立测试:你可以在 if __name__ == "__main__" 下面写测试代码或运行入口,这样你可以直接运行这个脚本来验证功能,而不影响别人导入使用。
+
+✅ 总结一句话:
+__name__ 的设计是为了让一个 Python 文件既能作为模块导入复用,又能作为脚本独立运行。
+"""
+
+# __all__变量的作用
+"""
+如果一个模块文件中有__all__变量,当使用from XXX import *导入时,只能导入这个列表中的元素,如
+__all__ = ['test_b']
+
+def test_a():
+    print("test_a")
+
+def test_b():
+    print("test_b")
+当其他文件通过from XXX import *导入时,只能使用test_A函数
+详见my_module2.py的举例
+"""
+
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+# 包
+
+# 什么是python包
+"""
+模块太多了会造成混乱,包功能就可以管理模块
+从物理上看,包就是一个文件夹,该文件夹下包含了一个__init__.py文件,还包含多个模块文件====>一个文件夹下有__init__.py就是包,没有就是一个普通文件夹
+从逻辑上看,包的本质依然是模块
+包的作用:当模块文件越来越多时,包可以用来管理这些模块,包的作用就是包含多个模块
+"""
+# 自定义包
+"""
+在pycharm中新建一个package包后,会自动在包里创建__init__.py文件,这个文件控制着包的导入行为
+(如果把__init__.py文件删掉,会看到这个文件夹的图标变成了普通图标而不是包的图标)
+并且我将之前创建的几个module文件移动进了包里面
+"""
+
+# 导入包
+# 注意,不推荐只导入包,如import test_package,至少要导入到模块层级
+"""
+导入: import 包名.模块名
+使用: 包名.模块名.目标
+如
+import test_package.my_module1
+test_package.my_module1.test()
+"""
+
+"""
+导入: from test_package import my_module1
+使用: my_module1.test(2, 5)==========>使用时不需要再加包名层级
+"""
+
+"""
+导入: from test_package.my_module1 import test()
+使用: test(2, 5)==========>使用时不需要再加模块层级
+"""
+
+"""
+导入: from test_package import *
+使用: my_module1.test(2, 5)
+注意使用*导入所有模块时,__init__.py文件中必须添加__all__ = []来控制允许导入的模块列表
+__all__只对使用*导入所有模块时,对其他情况不适用
+"""
+
+# 安装第三方包
+
+# 什么是第三方包
+"""
+包包含一堆的python模块,每个模块内含许多功能,所以,一个包就是一堆同类型功能的集合体
+python生态中,有很多第三方包(非python官方),可以极大的帮助我们提高效率,如:
+科学计算常用包 numpy包
+数据分析常用包 pandas包
+大数据计算常用包 pyspark、apache-flink包
+图形可视化常用包 matplotlib、pyecharts
+人工智能常用包 TensorFlow
+由于是第三方包,python没有内置,需要我们安装它们才可以导入使用
+"""
+
+# 使用pip安装第三方包
+"""
+python内置了pip程序
+打开命令提示符,在里面输入pip install 包名就可以安装第三方包
+
+pycharm也可以安装第三方包
+打开pycharm右下角的解释器,然后点击interpreter settings,
+就可以在File | Settings | Project: pythonProject | Python Interpreter看到当前解释器下已经安装的第三方包,
+想要安装其他第三方包,点击+然后输入包名称搜索到之后点击install package就可以了
+"""
+
+
+# 综合案例
+"""
+练习案例: 自定义工具包
+创建一个自定义包,名称为my_utils(我的工具)
+在包内提供2个模块:
+1、str_utils.py (字符串相关工具),内含:
+    函数: str_reverse(s), 接收传入字符串,将字符串反转返回
+    函数: substr(s, x, y), 按照下标x和y, 对字符串进行切片
+2、file_utils.py (文件处理相关工具),内含:
+    函数: print_file_info(file_name),接收传入文件的路径,打印文件的全部内容,如文件不存在则捕获异常,输出提示信息,通过finally关闭文件对象
+    函数: append_to_file(file_name, data),接收文件路径以及传入数据,将数据追加写入到文件中
+构建出包后,尝试用一用自己编写的工具包
+实现draft和正式版本见my_utils包文件夹
+"""

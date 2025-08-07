@@ -1,0 +1,4 @@
+*.json
+!important-config.json  # 如果你某个特定的 json 想保留
+*.csv
+*.zip
